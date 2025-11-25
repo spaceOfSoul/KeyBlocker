@@ -1,0 +1,39 @@
+# Build results
+bin/
+obj/
+[Bb]uild/
+x64/
+x86/
+*.obj
+*.exe
+*.dll
+*.pdb
+*.cache
+*.ilk
+*.log
+
+# Visual Studio files
+.vs/
+*.user
+*.userosscache
+*.suo
+
+# Package management
+packages/
+*.nupkg
+*.snupkg
+
+# C++ specific
+ipch/
+*.iobj
+*.ipdb
+
+# Cache and temp
+*.tlog
+*.lastbuildstate
+*.OpenCover.config
+*.opensdf
+*.sdf
+
+# Generated
+GeneratedFiles/
