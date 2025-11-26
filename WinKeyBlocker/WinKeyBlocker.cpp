@@ -17,6 +17,8 @@ static NOTIFYICONDATA nid = { 0 };
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+UINT8 g_winBlockFlag = 1;
+
 // 현재 실행 파일 전체 경로 반환
 static bool GetSelfPath(wchar_t* buf, DWORD cch) {
     DWORD n = GetModuleFileNameW(nullptr, buf, cch);
@@ -68,7 +70,7 @@ static void EnsureAutoStart() {
 }
 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode == HC_ACTION) {
+    if (g_winBlockFlag && nCode == HC_ACTION) {
         const KBDLLHOOKSTRUCT* p = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         if (p) {
             if (p->vkCode == VK_LWIN || p->vkCode == VK_RWIN) {
@@ -86,9 +88,18 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 void ShowTrayMenu(HWND hWnd) {
     POINT pt;
     GetCursorPos(&pt);
+
     HMENU hMenu = CreatePopupMenu();
     if (!hMenu) return;
-    AppendMenu(hMenu, MF_STRING, 1001, L"종료");
+
+    if (g_winBlockFlag) {
+        AppendMenu(hMenu, MF_STRING, 1001, L"윈도우키 활성화");
+    }
+    else {
+        AppendMenu(hMenu, MF_STRING, 1001, L"윈도우키 비활성화");
+    }
+    AppendMenu(hMenu, MF_STRING, 1002, L"종료");
+
     SetForegroundWindow(hWnd);
     TrackPopupMenu(hMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, hWnd, nullptr);
     DestroyMenu(hMenu);
@@ -155,8 +166,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         return 0;
     case WM_COMMAND:
-        if (LOWORD(wParam) == 1001) { // 종료
+        if (LOWORD(wParam) == 1002) { // 종료
             PostQuitMessage(0);
+        }
+        else if (LOWORD(wParam) == 1001) {
+            g_winBlockFlag = !g_winBlockFlag;
         }
         return 0;
     case WM_DESTROY:
